@@ -18,7 +18,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.imageio.ImageIO;
+import javax.swing.Box;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -39,7 +42,7 @@ public class PGame extends JPanel implements KeyListener, ActionListener, MouseL
 	Winner isWinner = new Winner();
 
 	private boolean play = false;
-	private int totalBricks = 5;
+	private int totalBricks;
 	private Timer timer;
 	private int delay = 10;
 	private List<Integer> randomXPos = new ArrayList<>();
@@ -51,21 +54,14 @@ public class PGame extends JPanel implements KeyListener, ActionListener, MouseL
 	private int pbrickH;
 	private boolean choose_lego = false;
 
-	public PGame() throws InterruptedException, IOException {
-		BufferedImage image = ImageIO.read(new File("src/images/task.png"));
-		ImageIcon picLabel = new ImageIcon(image);
-		JOptionPane.showMessageDialog(frame,
-				"* Vous disposez de 5 pièces.\n" + "* Cliquer au milieux de chaque pièce pour avancer.\n"
-						+ "* Vous devez reconstruire cette forme en utilisant les pièces"
-						+ "\n et en respectant l'enchainement numérique.\n"
-						+ "* L'emplacement de la forme n'est pas important.\n"
-						+ "* Les positions initiales des pièces sont aléatoires.",
-				"Votre tâche à faire", JOptionPane.PLAIN_MESSAGE, picLabel);
+	public PGame(int totalBricks) throws InterruptedException, IOException {
+
 		addKeyListener(this);
 		setFocusable(false);
 		setFocusTraversalKeysEnabled(false);
 		this.timer = new Timer(delay, this);
 		this.timer.start();
+		this.totalBricks = totalBricks;
 		initialDisposition();
 	}
 
@@ -173,7 +169,7 @@ public class PGame extends JPanel implements KeyListener, ActionListener, MouseL
 				}
 			}
 		} else
-			JOptionPane.showMessageDialog(frame, "Cliquez à chaque fois sur le milieux d'une brique pour avancer.");
+			JOptionPane.showMessageDialog(frame, "Cliquez à chaque fois sur le milieu d'une brique pour avancer.");
 
 	}
 
@@ -191,11 +187,11 @@ public class PGame extends JPanel implements KeyListener, ActionListener, MouseL
 			pbrickX += step;
 			bricks.get(this.indexPlayBrick).set(1, pbrickX);
 		}
-		if (this.isWinner.checkWinner(this.bricks)) {
-			JOptionPane.showMessageDialog(frame, "We have a Winner", "You won", JOptionPane.INFORMATION_MESSAGE);
+		if (this.isWinner.checkWinner(this.bricks, this.totalBricks)) {
+			JOptionPane.showMessageDialog(frame, "Tu as réussi", "Félicitation", JOptionPane.INFORMATION_MESSAGE);
 			System.exit(0);
 		} else if (this.isGameOver.checkGameOver(this.bricks)) {
-			JOptionPane.showMessageDialog(frame, "The Game is Over", "Game Over", JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showMessageDialog(frame, "GameOver", "Game Over", JOptionPane.INFORMATION_MESSAGE);
 			System.exit(0);
 		}
 
@@ -215,11 +211,11 @@ public class PGame extends JPanel implements KeyListener, ActionListener, MouseL
 			pbrickY += step;
 			bricks.get(this.indexPlayBrick).set(2, pbrickY);
 		}
-		if (this.isWinner.checkWinner(this.bricks)) {
-			JOptionPane.showMessageDialog(frame, "We have a Winner", "You won", JOptionPane.INFORMATION_MESSAGE);
+		if (this.isWinner.checkWinner(this.bricks, this.totalBricks)) {
+			JOptionPane.showMessageDialog(frame, "Tu as réussi", "Félicitation", JOptionPane.INFORMATION_MESSAGE);
 			System.exit(0);
 		} else if (this.isGameOver.checkGameOver(this.bricks)) {
-			JOptionPane.showMessageDialog(frame, "The Game is Over", "Game Over", JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showMessageDialog(frame, "GameOver", "Game Over", JOptionPane.INFORMATION_MESSAGE);
 			System.exit(0);
 		}
 
@@ -234,13 +230,13 @@ public class PGame extends JPanel implements KeyListener, ActionListener, MouseL
 		} else {
 			changeFisrtOrOldBrick(e.getX(), e.getY(), false);
 		}
-		if (this.isWinner.checkWinner(this.bricks)) {
-			JOptionPane.showMessageDialog(frame, "We have a Winner", "You won", JOptionPane.INFORMATION_MESSAGE);
+		if (this.isWinner.checkWinner(this.bricks, this.totalBricks)) {
+			JOptionPane.showMessageDialog(frame, "Tu as réussi", "Félicitation", JOptionPane.INFORMATION_MESSAGE);
 			System.exit(0);
 		}
 
 		else if (this.isGameOver.checkGameOver(this.bricks)) {
-			JOptionPane.showMessageDialog(frame, "The Game is Over", "Game Over", JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showMessageDialog(frame, "GameOver", "Game Over", JOptionPane.INFORMATION_MESSAGE);
 			System.exit(0);
 		}
 
