@@ -17,8 +17,6 @@ public class Presentation {
 		obj.setResizable(false);
 		obj.setVisible(true);
 		obj.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-	   
 		obj.add(pgame);
 		obj.addKeyListener(pgame);
 		obj.addMouseListener(pgame);

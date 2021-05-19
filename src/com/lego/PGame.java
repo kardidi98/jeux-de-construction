@@ -1,7 +1,10 @@
 package com.lego;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -22,32 +25,42 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
-
 //Status of bricks => 0: free, 1: using, 2: used
 
-public class PGame extends JPanel implements KeyListener, ActionListener, MouseListener{
+public class PGame extends JPanel implements KeyListener, ActionListener, MouseListener {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	JFrame frame = new JFrame();
 	GameOver isGameOver = new GameOver();
 	Winner isWinner = new Winner();
-	
+
 	private boolean play = false;
 	private int totalBricks = 5;
 	private Timer timer;
 	private int delay = 10;
-	private List<Integer> randomXY = new ArrayList<>();
+	private List<Integer> randomXPos = new ArrayList<>();
 	private List<List<Integer>> bricks = new ArrayList<>();
 	private int indexPlayBrick = -1;
 	private int pbrickX;
-	private int pbrickY; 
+	private int pbrickY;
 	private int pbrickW;
 	private int pbrickH;
 	private boolean choose_lego = false;
 
 	public PGame() throws InterruptedException, IOException {
-		BufferedImage image = ImageIO.read(new File("src/images/but.png"));
-		JLabel picLabel = new JLabel(new ImageIcon(image));
-		JOptionPane.showMessageDialog(frame, picLabel, "Votre tâche à faire", JOptionPane.PLAIN_MESSAGE, null);
+		BufferedImage image = ImageIO.read(new File("src/images/task.png"));
+		ImageIcon picLabel = new ImageIcon(image);
+		JOptionPane.showMessageDialog(frame,
+				"* Vous disposez de 5 pièces.\n" + "* Cliquer au milieux de chaque pièce pour avancer.\n"
+						+ "* Vous devez reconstruire cette forme en utilisant les pièces"
+						+ "\n et en respectant l'enchainement numérique.\n"
+						+ "* L'emplacement de la forme n'est pas important.\n"
+						+ "* Les positions initiales des pièces sont aléatoires.",
+				"Votre tâche à faire", JOptionPane.PLAIN_MESSAGE, picLabel);
 		addKeyListener(this);
 		setFocusable(false);
 		setFocusTraversalKeysEnabled(false);
@@ -57,16 +70,17 @@ public class PGame extends JPanel implements KeyListener, ActionListener, MouseL
 	}
 
 	private void initialDisposition() throws InterruptedException {
-		
-		for (int i=0; i < totalBricks; i++) {
+
+		for (int i = 0; i < totalBricks; i++) {
 			List<Integer> brick = new ArrayList<>();
-			int x = randomX();
-			int y = randomY();
-			// brick is like [status, x, y, width, height] 
-			brick.add(0); brick.add(x*50); brick.add(y*75); brick.add(50); brick.add(75);
+			// brick representation is like: [status, x, y, width, height]
+			brick.add(0);
+			brick.add(randomX() * 50);
+			brick.add(randomY() * 75);
+			brick.add(50);
+			brick.add(75);
 			this.bricks.add(brick);
-		
-		}		
+		}
 		this.pbrickX = this.bricks.get(0).get(1);
 		this.pbrickY = this.bricks.get(0).get(2);
 		this.pbrickW = this.bricks.get(0).get(3);
@@ -74,48 +88,48 @@ public class PGame extends JPanel implements KeyListener, ActionListener, MouseL
 	}
 
 	private int randomX() {
-		int randomPositionX = 0 + (int)(Math.random() * ((9 - 0) + 1));
-		for (int i = 0; i < this.randomXY.size() && i < this.randomXY.size() ; i+=2) {
-			if(this.randomXY.get(i)== randomPositionX) {
-				randomPositionX = 0 + (int)(Math.random() * ((9 - 0) + 1));
-			}
-		}
-		
-		this.randomXY.add(randomPositionX);
+		int randomPositionX;
+		do {
+			randomPositionX = 0 + (int) (Math.random() * ((9 - 0) + 1));
+		} while (this.randomXPos.contains(randomPositionX));
+
+		this.randomXPos.add(randomPositionX);
 		return randomPositionX;
 	}
-	
+
 	private int randomY() {
-		int randomPositionY = 0 + (int)(Math.random() * ((4 - 0) + 1));
-		for (int i = 1; i < this.randomXY.size() && i < this.randomXY.size() ; i+=2) {
-			if(this.randomXY.get(i)== randomPositionY) {
-				randomPositionY = 0 + (int)(Math.random() * ((4 - 0) + 1));
-			}
-		}
-		
-		this.randomXY.add(randomPositionY);
-		return randomPositionY;
+		return 0 + (int) (Math.random() * ((4 - 0) + 1));
 	}
 
 	public void paint(Graphics g) {
-		//background
+		Graphics2D g2 = (Graphics2D) g;
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		Font font = new Font("Serif", Font.CENTER_BASELINE, 12);
+		g2.setFont(font);
+
+		// background
 		g.setColor(Color.white);
 		g.fillRect(1, 1, 692, 592);
-		
-		
+
 		for (List<Integer> brick : this.bricks) {
 			g.setColor(getColor(brick.get(0)));
 			g.fillRect(brick.get(1), brick.get(2), brick.get(3), brick.get(4));
+			int x = (int) brick.get(3) / 2 + brick.get(1);
+			int y = (int) brick.get(4) / 2 + brick.get(2) + 5;
+
+			g2.setColor(Color.black);
+			g2.drawString("" + (this.bricks.indexOf(brick) + 1), x, y);
+
 		}
-		//Vertical Grids
+		// Vertical Grids
 		for (int i = 1; i <= 10; i++) {
-			g.setColor(Color.black);
-			g.fillRect(i*50, 0, 1, 400);
+			g.setColor(Color.gray);
+			g.fillRect(i * 50, 0, 1, 400);
 		}
-		//Horizontal Grids
+		// Horizontal Grids
 		for (int i = 1; i <= 5; i++) {
-			g.setColor(Color.black);
-			g.fillRect(0,i*75, 500, 1);
+			g.setColor(Color.gray);
+			g.fillRect(0, i * 75, 500, 1);
 		}
 		g.dispose();
 	}
@@ -128,151 +142,172 @@ public class PGame extends JPanel implements KeyListener, ActionListener, MouseL
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-		if(choose_lego) {
-			if(e.getKeyCode() == KeyEvent.VK_RIGHT) {
-				if(pbrickX >= 450) {
+		if (choose_lego) {
+			if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+				if (pbrickX >= 450) {
 					pbrickX = 450;
-				}
-				else {
+				} else {
 					moveRightOrLeft(50);
 				}
 			}
-			if(e.getKeyCode() == KeyEvent.VK_LEFT) {
-				if(pbrickX <= 0) {
+			if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+				if (pbrickX <= 0) {
 					pbrickX = 0;
-				}
-				else {
+				} else {
 					moveRightOrLeft(-50);
 				}
 			}
-			if(e.getKeyCode() == KeyEvent.VK_UP) {
-			
-				if(pbrickY <= 0) {
+			if (e.getKeyCode() == KeyEvent.VK_UP) {
+
+				if (pbrickY <= 0) {
 					pbrickY = 0;
-				}
-				else {
+				} else {
 					moveTopOrDown(-75);
 				}
 			}
-			if(e.getKeyCode() == KeyEvent.VK_DOWN) {
-				if(pbrickY >= 300) {
+			if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+				if (pbrickY >= 300) {
 					pbrickY = 300;
-				}
-				else {
+				} else {
 					moveTopOrDown(75);
 				}
 			}
-		}
-		else
-			JOptionPane.showMessageDialog(frame,
-			    "Cliquez à chaque fois sur le milieux d'une brique pour avancer.");
-		
+		} else
+			JOptionPane.showMessageDialog(frame, "Cliquez à chaque fois sur le milieux d'une brique pour avancer.");
+
 	}
-	
-	public void moveRightOrLeft(int pas) {
+
+	public void moveRightOrLeft(int step) {
+
 		boolean existVoisinX = false;
 		for (List<Integer> brick : this.bricks) {
-			if(pbrickX + pas == brick.get(1) && pbrickY == brick.get(2)) {
+			if (pbrickX + step == brick.get(1) && pbrickY == brick.get(2)) {
 				existVoisinX = true;
 				break;
-			}	
+			}
 		}
-		if(!existVoisinX) {
+		if (!existVoisinX) {
 			this.play = true;
-			pbrickX += pas;
-			bricks.get(this.indexPlayBrick).set(1,pbrickX);
+			pbrickX += step;
+			bricks.get(this.indexPlayBrick).set(1, pbrickX);
 		}
+		if (this.isWinner.checkWinner(this.bricks)) {
+			JOptionPane.showMessageDialog(frame, "We have a Winner", "You won", JOptionPane.INFORMATION_MESSAGE);
+			System.exit(0);
+		} else if (this.isGameOver.checkGameOver(this.bricks)) {
+			JOptionPane.showMessageDialog(frame, "The Game is Over", "Game Over", JOptionPane.INFORMATION_MESSAGE);
+			System.exit(0);
+		}
+
 	}
-	
-	public void moveTopOrDown(int pas) {
+
+	public void moveTopOrDown(int step) {
+
 		boolean existVoisinY = false;
 		for (List<Integer> brick : this.bricks) {
-			if(pbrickY + pas == brick.get(2) && pbrickX == brick.get(1)) {
+			if (pbrickY + step == brick.get(2) && pbrickX == brick.get(1)) {
 				existVoisinY = true;
 				break;
-			}	
+			}
 		}
-		if(!existVoisinY) {
+		if (!existVoisinY) {
 			this.play = true;
-			pbrickY += pas;
-			bricks.get(this.indexPlayBrick).set(2,pbrickY);
+			pbrickY += step;
+			bricks.get(this.indexPlayBrick).set(2, pbrickY);
 		}
+		if (this.isWinner.checkWinner(this.bricks)) {
+			JOptionPane.showMessageDialog(frame, "We have a Winner", "You won", JOptionPane.INFORMATION_MESSAGE);
+			System.exit(0);
+		} else if (this.isGameOver.checkGameOver(this.bricks)) {
+			JOptionPane.showMessageDialog(frame, "The Game is Over", "Game Over", JOptionPane.INFORMATION_MESSAGE);
+			System.exit(0);
+		}
+
 	}
-	
+
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		if(this.isGameOver.checkGameOver(this.bricks)) {
-			JOptionPane.showMessageDialog(frame, "The Game is Over", "GameOver", JOptionPane.INFORMATION_MESSAGE);
-		    System.exit(0); 
+
+		this.choose_lego = true;
+		if (this.indexPlayBrick == -1) {
+			changeFisrtOrOldBrick(e.getX(), e.getY(), true);
+		} else {
+			changeFisrtOrOldBrick(e.getX(), e.getY(), false);
 		}
-		else{
-			this.choose_lego = true;
-			if(this.indexPlayBrick == -1) {
-				
-				changeFisrtOrOldBrick(e.getX(),e.getY(),true);
-			}
-			else {
-				changeFisrtOrOldBrick(e.getX(),e.getY(),false);
-			}
-		}
-		
-		if(this.isWinner.checkWinner(this.bricks)) {
+		if (this.isWinner.checkWinner(this.bricks)) {
 			JOptionPane.showMessageDialog(frame, "We have a Winner", "You won", JOptionPane.INFORMATION_MESSAGE);
-		    System.exit(0); 
+			System.exit(0);
 		}
+
+		else if (this.isGameOver.checkGameOver(this.bricks)) {
+			JOptionPane.showMessageDialog(frame, "The Game is Over", "Game Over", JOptionPane.INFORMATION_MESSAGE);
+			System.exit(0);
+		}
+
 	}
-	
+
 	public void changeFisrtOrOldBrick(int x, int y, boolean isFirst) {
 		for (List<Integer> brick : this.bricks) {
-	    	if((x >= brick.get(1) && x <= brick.get(1)+brick.get(3))
-	    			&& (y >= brick.get(2) && y <= brick.get(2)+brick.get(4))) {
-		    	pbrickX = brick.get(1);
-		    	pbrickY = brick.get(2);
-		    	pbrickW = brick.get(3);
-		    	pbrickH = brick.get(4);
-		    	int color_id = nextColor(brick);
-		    	brick.set(0, color_id);
-		    	if(!isFirst) {
-		    		List<Integer> oldBrick = this.bricks.get(this.indexPlayBrick); 
-			    oldBrick.set(0, nextColor(oldBrick));
-		    	}
-		    	
-		    	this.indexPlayBrick = bricks.indexOf(brick);
-		    	break;
-		    }
+			if ((x >= brick.get(1) && x <= brick.get(1) + brick.get(3))
+					&& (y >= brick.get(2) && y <= brick.get(2) + brick.get(4))) {
+				this.pbrickX = brick.get(1);
+				this.pbrickY = brick.get(2);
+				this.pbrickW = brick.get(3);
+				this.pbrickH = brick.get(4);
+				int color_id = nextColor(brick);
+				brick.set(0, color_id);
+				if (!isFirst) {
+					List<Integer> oldBrick = this.bricks.get(this.indexPlayBrick);
+					oldBrick.set(0, nextColor(oldBrick));
+				}
+
+				this.indexPlayBrick = bricks.indexOf(brick);
+				break;
+			}
 		}
 	}
-	
+
 	public int nextColor(List<Integer> brick) {
-		if(brick.get(0)==0) return 1;
-		else if(brick.get(0)==1) return 2;
-		else if(brick.get(0)==2) return 2;
-		else return 0;
+		if (brick.get(0) == 0)
+			return 1;
+		else if (brick.get(0) == 1)
+			return 2;
+		else if (brick.get(0) == 2)
+			return 2;
+		else
+			return 0;
 	}
 
 	public Color getColor(int status) {
-		if(status == 0) {
+		if (status == 0) {
 			return Color.green;
-		}
-		else if(status == 1) {
-			return Color.yellow; 
+		} else if (status == 1) {
+			return Color.yellow;
 		}
 		return Color.red;
 	}
 
 	@Override
-	public void keyReleased(KeyEvent e) {}
-	@Override
-	public void keyTyped(KeyEvent e) {}
-	@Override
-	public void mousePressed(MouseEvent e) {}
+	public void keyReleased(KeyEvent e) {
+	}
 
 	@Override
-	public void mouseReleased(MouseEvent e) {}
+	public void keyTyped(KeyEvent e) {
+	}
 
 	@Override
-	public void mouseEntered(MouseEvent e) {}
+	public void mousePressed(MouseEvent e) {
+	}
 
 	@Override
-	public void mouseExited(MouseEvent e) {}
+	public void mouseReleased(MouseEvent e) {
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+	}
 }
