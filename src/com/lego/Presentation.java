@@ -9,6 +9,7 @@ import javax.swing.JFrame;
 public class Presentation {
 
 	public static void main(String[] args) throws InterruptedException, IOException {
+
 		JFrame obj = new JFrame();
 		Model model = new Model(obj);
 		
